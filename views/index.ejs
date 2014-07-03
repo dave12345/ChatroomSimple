@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chatroom</title>
+    <link rel="stylesheet" type="text/css" href="stylesheets/style.css" />
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+	<script>
+	$(document).ready(function(){
+		io = io.connect();
+
+		var button = new Audio('/sounds/button-09.mp3');
+		var door = new Audio('/sounds/door-open.mp3');
+
+		var name = prompt("What's your name?");
+		door.play();
+
+		io.emit('got_new_user', {name:name});
+
+		io.on('chat_log', function(data){
+			for(var x in data.posts){
+				var post = data.posts[x];
+				$('#chatBox').append("<p style='color: "+ post.color+";'>" + post.name+ ": " + post.msg+ "</p>");
+			}
+		});
+
+		io.on('add_text', function(data){
+			$('#chatBox').append("<p style='color: "+ data.color+";'>" + data.name+ ": " + data.msg+ "</p>");
+			button.play();
+		})
+
+		$('button').click(function(){
+			io.emit('new_message', {msg: $('#chatInput').val()});
+			$('#chatInput').val('');
+		})
+
+		$('#color').change(function(){
+			io.emit('color_change', {color: $(this).val()});
+		})
+	})//end
+
+	</script>
+  </head>
+  <body>
+  	<div id="chatBox">
+  	</div>
+  	<br>
+  	<input type="text" id="chatInput">
+  	<button>CHAT!</button>
+	<select id="color">
+		<option selected>Black</option>
+		<option>Gold</option>
+		<option>Red</option>
+		<option>Green</option>
+		<option>Yellow</option>
+		<option>Aqua</option>
+	</select>
+  </body>
+</html>
